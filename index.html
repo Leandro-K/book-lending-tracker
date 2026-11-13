@@ -13,7 +13,13 @@
       <p class="ui-muted ui-m-0">Keep track of what you lent, to whom, and when it's due back.</p>
     </header>
 
-    <section id="panel-lend">
+    <nav class="ui-tabs" id="tabs" aria-label="Sections">
+      <button class="ui-tab ui-tab--active" type="button" id="tab-lend" aria-controls="panel-lend">Lend a book</button>
+      <button class="ui-tab" type="button" id="tab-loans" aria-controls="panel-loans">Loans <span class="ui-badge" id="loans-count">0</span></button>
+      <button class="ui-tab" type="button" id="tab-summary" aria-controls="panel-summary">Summary</button>
+    </nav>
+
+    <section class="ui-tab-panel" role="tabpanel" id="panel-lend" aria-labelledby="tab-lend">
       <div class="ui-card ui-mb-5">
         <h2 class="ui-h2">Lend a book</h2>
         <form id="loan-form">
@@ -73,7 +79,7 @@
       </div>
     </section>
 
-    <section id="panel-loans">
+    <section class="ui-tab-panel" role="tabpanel" id="panel-loans" aria-labelledby="tab-loans">
       <div class="ui-card ui-mb-5">
         <h2 class="ui-h2">Lent books</h2>
         <div class="ui-scroll-x">
@@ -94,7 +100,7 @@
       </div>
     </section>
 
-    <section id="panel-summary">
+    <section class="ui-tab-panel" role="tabpanel" id="panel-summary" aria-labelledby="tab-summary">
       <div class="ui-grid">
         <div class="ui-stat">
           <span class="ui-stat-label">Total loans</span>
@@ -112,6 +118,7 @@
   <script>
     const LETTERS = /^[\p{L} .'-]+$/u;
     const store = UI.store("book-lending-tracker.loans", []);
+    const tabs = UI.tabs(document.getElementById("tabs"));
     let loans = store.load();
 
     function status(loan) {
@@ -143,6 +150,7 @@
       UI.table(document.getElementById("loan-table-body"), sorted, columns, "No books lent yet.");
       document.getElementById("total-loans").textContent = loans.length;
       document.getElementById("overdue-loans").textContent = loans.filter((l) => status(l).overdue).length;
+      document.getElementById("loans-count").textContent = loans.length;
     }
 
     UI.form(document.getElementById("loan-form"), {
@@ -155,6 +163,7 @@
       },
       onSubmit(values) {
         update([...loans, { id: UI.uid(), ...values, returned: false }]);
+        tabs.select("panel-loans");
       }
     });
 
