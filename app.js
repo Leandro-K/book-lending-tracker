@@ -18,14 +18,14 @@ const UI = (function () {
   function button(text, variant, onClick, small) {
     return el("button", {
       type: "button",
-      class: "ui-btn ui-btn--" + (variant || "secondary") + (small ? " ui-btn--sm" : ""),
+      class: "lt-btn lt-btn--" + (variant || "secondary") + (small ? " lt-btn--sm" : ""),
       text,
       onClick
     });
   }
 
   function badge(text, variant) {
-    return el("span", { class: "ui-badge" + (variant ? " ui-badge--" + variant : ""), text });
+    return el("span", { class: "lt-badge" + (variant ? " lt-badge--" + variant : ""), text });
   }
 
   function store(key, fallback) {
@@ -93,7 +93,7 @@ const UI = (function () {
       const input = formEl.elements[name];
       const slot = document.getElementById(input.id + "-msg");
       if (slot) slot.textContent = message;
-      input.classList.toggle("ui-input--invalid", Boolean(message));
+      input.classList.toggle("lt-input--invalid", Boolean(message));
       input.setAttribute("aria-invalid", message ? "true" : "false");
     }
 
@@ -139,13 +139,13 @@ const UI = (function () {
   }
 
   function tabs(root) {
-    const list = Array.from(root.querySelectorAll(".ui-tab"));
+    const list = Array.from(root.querySelectorAll(".lt-tab"));
     const panelOf = (tab) => tab.getAttribute("aria-controls");
 
     function select(panelId, focus) {
       list.forEach((tab) => {
         const active = panelOf(tab) === panelId;
-        tab.classList.toggle("ui-tab--active", active);
+        tab.classList.toggle("lt-tab--active", active);
         tab.setAttribute("aria-selected", String(active));
         tab.tabIndex = active ? 0 : -1;
         document.getElementById(panelOf(tab)).hidden = !active;
@@ -165,14 +165,14 @@ const UI = (function () {
       });
     });
 
-    select(panelOf(list.find((t) => t.classList.contains("ui-tab--active")) || list[0]));
+    select(panelOf(list.find((t) => t.classList.contains("lt-tab--active")) || list[0]));
     return { select };
   }
 
   function table(tbody, rows, columns, empty) {
     tbody.replaceChildren();
     if (rows.length === 0) {
-      tbody.append(el("tr", {}, el("td", { colspan: columns.length, class: "ui-text-center ui-muted", text: empty || "No data." })));
+      tbody.append(el("tr", {}, el("td", { colspan: columns.length, class: "lt-text-center lt-muted", text: empty || "No data." })));
       return;
     }
     rows.forEach((row) => tbody.append(el("tr", {}, columns.map((render) => el("td", {}, render(row))))));
