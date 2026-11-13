@@ -94,6 +94,18 @@
       </div>
     </section>
 
+    <section id="panel-summary">
+      <div class="ui-grid">
+        <div class="ui-stat">
+          <span class="ui-stat-label">Total loans</span>
+          <span class="ui-stat-value" id="total-loans">0</span>
+        </div>
+        <div class="ui-stat ui-stat--danger">
+          <span class="ui-stat-label">Overdue loans</span>
+          <span class="ui-stat-value" id="overdue-loans">0</span>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script src="app.js"></script>
@@ -129,6 +141,8 @@
     function render() {
       const sorted = [...loans].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
       UI.table(document.getElementById("loan-table-body"), sorted, columns, "No books lent yet.");
+      document.getElementById("total-loans").textContent = loans.length;
+      document.getElementById("overdue-loans").textContent = loans.filter((l) => status(l).overdue).length;
     }
 
     UI.form(document.getElementById("loan-form"), {
