@@ -73,6 +73,27 @@
       </div>
     </section>
 
+    <section id="panel-loans">
+      <div class="ui-card ui-mb-5">
+        <h2 class="ui-h2">Lent books</h2>
+        <div class="ui-scroll-x">
+          <table class="ui-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Borrower</th>
+                <th>Due date</th>
+                <th>Genre</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="loan-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <script src="app.js"></script>
@@ -80,6 +101,35 @@
     const LETTERS = /^[\p{L} .'-]+$/u;
     const store = UI.store("book-lending-tracker.loans", []);
     let loans = store.load();
+
+    function status(loan) {
+      if (loan.returned) return { text: "Returned", variant: "success" };
+      if (UI.dates.isPast(loan.dueDate)) return { text: "Overdue", variant: "danger", overdue: true };
+      return { text: "On loan", variant: "warning" };
+    }
+
+    function update(next) {
+      loans = next;
+      store.save(loans);
+      render();
+    }
+
+    const columns = [
+      (loan) => [UI.el("span", { class: "ui-strong", text: loan.title }), UI.el("span", { class: "ui-block ui-small ui-muted", text: "by " + loan.author })],
+      (loan) => loan.borrower,
+      (loan) => UI.dates.format(loan.dueDate),
+      (loan) => loan.genre,
+      (loan) => UI.badge(status(loan).text, status(loan).variant),
+      (loan) => UI.el("div", { class: "ui-row" },
+        UI.button(loan.returned ? "Undo return" : "Mark returned", "secondary", () => update(loans.map((l) => (l.id === loan.id ? { ...l, returned: !l.returned } : l))), true),
+        UI.button("Delete", "danger", () => update(loans.filter((l) => l.id !== loan.id)), true)
+      )
+    ];
+
+    function render() {
+      const sorted = [...loans].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+      UI.table(document.getElementById("loan-table-body"), sorted, columns, "No books lent yet.");
+    }
 
     UI.form(document.getElementById("loan-form"), {
       fields: {
@@ -90,10 +140,11 @@
         genre: [UI.rules.required("Choose a genre.")]
       },
       onSubmit(values) {
-        loans.push({ id: UI.uid(), ...values, returned: false });
-        store.save(loans);
+        update([...loans, { id: UI.uid(), ...values, returned: false }]);
       }
     });
+
+    render();
   </script>
 </body>
 </html>
