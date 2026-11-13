@@ -6,6 +6,7 @@
   <title>Book Lending Tracker</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Leandro-K/lt-css-library@v1.0.0/lt.css">
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/gh/Leandro-K/lendtrack-js@v1.0.0/lendtrack.js"></script>
 </head>
 <body class="lt-page">
   <main class="lt-container">
@@ -116,59 +117,5 @@
   </main>
 
   <script src="app.js"></script>
-  <script>
-    const LETTERS = /^[\p{L} .'-]+$/u;
-    const store = UI.store("book-lending-tracker.loans", []);
-    const tabs = UI.tabs(document.getElementById("tabs"));
-    let loans = store.load();
-
-    function status(loan) {
-      if (loan.returned) return { text: "Returned", variant: "success" };
-      if (UI.dates.isPast(loan.dueDate)) return { text: "Overdue", variant: "danger", overdue: true };
-      return { text: "On loan", variant: "warning" };
-    }
-
-    function update(next) {
-      loans = next;
-      store.save(loans);
-      render();
-    }
-
-    const columns = [
-      (loan) => [UI.el("span", { class: "lt-strong", text: loan.title }), UI.el("span", { class: "lt-block lt-small lt-muted", text: "by " + loan.author })],
-      (loan) => loan.borrower,
-      (loan) => UI.dates.format(loan.dueDate),
-      (loan) => loan.genre,
-      (loan) => UI.badge(status(loan).text, status(loan).variant),
-      (loan) => UI.el("div", { class: "lt-row" },
-        UI.button(loan.returned ? "Undo return" : "Mark returned", "secondary", () => update(loans.map((l) => (l.id === loan.id ? { ...l, returned: !l.returned } : l))), true),
-        UI.button("Delete", "danger", () => update(loans.filter((l) => l.id !== loan.id)), true)
-      )
-    ];
-
-    function render() {
-      const sorted = [...loans].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-      UI.table(document.getElementById("loan-table-body"), sorted, columns, "No books lent yet.");
-      document.getElementById("total-loans").textContent = loans.length;
-      document.getElementById("overdue-loans").textContent = loans.filter((l) => status(l).overdue).length;
-      document.getElementById("loans-count").textContent = loans.length;
-    }
-
-    UI.form(document.getElementById("loan-form"), {
-      fields: {
-        title: [UI.rules.required("Please enter the book title."), UI.rules.maxLength(120, "Title is too long (max 120).")],
-        author: [UI.rules.required("Please enter the author."), UI.rules.pattern(LETTERS, "Only letters, spaces, . ' -")],
-        borrower: [UI.rules.required("Who borrowed it?"), UI.rules.minLength(2, "Name must be at least 2 letters."), UI.rules.pattern(LETTERS, "Only letters, spaces, . ' -")],
-        dueDate: [UI.rules.required("Pick a due date."), UI.rules.date("That date is not valid.")],
-        genre: [UI.rules.required("Choose a genre.")]
-      },
-      onSubmit(values) {
-        update([...loans, { id: UI.uid(), ...values, returned: false }]);
-        tabs.select("panel-loans");
-      }
-    });
-
-    render();
-  </script>
 </body>
 </html>
