@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Book Lending Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="ui-page">
+  <main class="ui-container">
+    <header class="ui-mb-5">
+      <h1 class="ui-h1">Book Lending Tracker</h1>
+      <p class="ui-muted ui-m-0">Keep track of what you lent, to whom, and when it's due back.</p>
+    </header>
+
+    <section id="panel-lend">
+      <div class="ui-card ui-mb-5">
+        <h2 class="ui-h2">Lend a book</h2>
+        <form id="loan-form">
+          <div class="ui-grid">
+            <div class="ui-field">
+              <label class="ui-label" for="title">Title</label>
+              <div class="ui-field-row">
+                <input class="ui-input" type="text" id="title" name="title" required>
+                <span class="ui-field-msg" id="title-msg" aria-live="polite"></span>
+              </div>
+            </div>
+            <div class="ui-field">
+              <label class="ui-label" for="author">Author</label>
+              <div class="ui-field-row">
+                <input class="ui-input" type="text" id="author" name="author" required>
+                <span class="ui-field-msg" id="author-msg" aria-live="polite"></span>
+              </div>
+            </div>
+            <div class="ui-field">
+              <label class="ui-label" for="borrower">Borrower</label>
+              <div class="ui-field-row">
+                <input class="ui-input" type="text" id="borrower" name="borrower" required>
+                <span class="ui-field-msg" id="borrower-msg" aria-live="polite"></span>
+              </div>
+            </div>
+            <div class="ui-field">
+              <label class="ui-label" for="dueDate">Due date</label>
+              <div class="ui-field-row">
+                <input class="ui-input" type="date" id="dueDate" name="dueDate" required>
+                <span class="ui-field-msg" id="dueDate-msg" aria-live="polite"></span>
+              </div>
+            </div>
+            <div class="ui-field">
+              <label class="ui-label" for="genre">Genre</label>
+              <div class="ui-field-row">
+                <select class="ui-input" id="genre" name="genre" required>
+                  <option value="">Choose a genre</option>
+                  <option>Fiction</option>
+                  <option>Non-fiction</option>
+                  <option>Science</option>
+                  <option>History</option>
+                  <option>Biography</option>
+                  <option>Fantasy</option>
+                  <option>Mystery</option>
+                  <option>Textbook</option>
+                  <option>Other</option>
+                </select>
+                <span class="ui-field-msg" id="genre-msg" aria-live="polite"></span>
+              </div>
+            </div>
+          </div>
+          <div class="ui-row ui-mt-5">
+            <button class="ui-btn ui-btn--primary" type="submit">Add loan</button>
+            <button class="ui-btn ui-btn--secondary" type="reset">Clear</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    const LETTERS = /^[\p{L} .'-]+$/u;
+    const store = UI.store("book-lending-tracker.loans", []);
+    let loans = store.load();
+
+    UI.form(document.getElementById("loan-form"), {
+      fields: {
+        title: [UI.rules.required("Please enter the book title."), UI.rules.maxLength(120, "Title is too long (max 120).")],
+        author: [UI.rules.required("Please enter the author."), UI.rules.pattern(LETTERS, "Only letters, spaces, . ' -")],
+        borrower: [UI.rules.required("Who borrowed it?"), UI.rules.minLength(2, "Name must be at least 2 letters."), UI.rules.pattern(LETTERS, "Only letters, spaces, . ' -")],
+        dueDate: [UI.rules.required("Pick a due date."), UI.rules.date("That date is not valid.")],
+        genre: [UI.rules.required("Choose a genre.")]
+      },
+      onSubmit(values) {
+        loans.push({ id: UI.uid(), ...values, returned: false });
+        store.save(loans);
+      }
+    });
+  </script>
+</body>
+</html>
